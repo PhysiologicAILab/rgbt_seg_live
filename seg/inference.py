@@ -17,6 +17,7 @@ class seg_inference(object):
         
         self.rgb_transform = transforms.Compose([
             transforms.Resize((self.testsize, self.testsize)),
+            transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406],
                                  [0.229, 0.224, 0.225])])
         self.thermal_transform = transforms.Compose([
@@ -25,14 +26,14 @@ class seg_inference(object):
 
     def run_inference(self, rgb_img, thermal_img=None):
         
-        rgb_img_tensor = torch.from_numpy(rgb_img).float()
-        rgb_img_tensor = self.rgb_transform(rgb_img_tensor).to(self.device)
+        rgb_img_tensor = self.rgb_transform(rgb_img).unsqueeze(0).to(self.device)
         
         # thermal_img_tensor = torch.from_numpy(thermal_img).float()
         # thermal_img_tensor = self.thermal_transform(thermal_img_tensor).to(self.device)
 
-        pred_seg = self.model(rgb_img_tensor)
+        # pred_seg = self.model(rgb_img_tensor)
         # pred_seg = self.model(rgb_img_tensor, thermal_img_tensor)
+        pred_seg = self.model(rgb_img_tensor, None)
 
         pred_seg = torch.argmax(pred_seg, 1)
         pred_seg = pred_seg.cpu().numpy()
