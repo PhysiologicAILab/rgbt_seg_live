@@ -1,0 +1,1 @@
+place the checkpoint (model.pth) in this directory 

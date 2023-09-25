@@ -12,7 +12,7 @@ import argparse
 
 import cv2
 from utils.flircamera import CameraManager as tcam
-
+from seg.inference import seg_inference
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtCore import QFile, QObject, Signal, Qt
 from PySide6.QtUiTools import QUiLoader
@@ -21,14 +21,18 @@ from pathlib import Path
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import cv2
+from PIL import Image
+
 
 global thermal_camera_connect_status, rgb_camera_connect_status, acquisition_status, keep_acquisition_thread, acquisition_thread_rgb_live
 global recording_status, save_path, num_frames, subdir_path, num_frames_rgb
-global capture_thermal, capture_rgb, pseudocolor, fps
+global capture_thermal, capture_rgb, run_inference, pseudocolor
 global use_lock_rgb_capture_with_thermal, enable_rgb_capture_with_lock
+global rgb_inf_img, thermal_inf_img
 
 capture_rgb = False
 capture_thermal = False
+run_inference = False
 acquisition_status = False
 recording_status = False
 thermal_camera_connect_status = False
@@ -38,8 +42,10 @@ acquisition_thread_rgb_live = False
 use_lock_rgb_capture_with_thermal = False
 enable_rgb_capture_with_lock = False
 
+rgb_inf_img = None
+thermal_inf_img = None
+
 pseudocolor = 'coolwarm'
-fps = 30
 save_path = "recorded_frames"
 num_frames = 0
 num_frames_rgb = 0
@@ -61,16 +67,12 @@ class RGBTCam(QWidget):
         self.tcamObj = tcam()
         self.pseudocolor_list = ['CoolWarm', 'GNUPlot2', 'Gray', 'Magma',
                                  'Nipy_Spectral', 'Pink', 'Plasma', 'Prism', 'Rainbow', 'Seismic', 'Terrain']
-        self.fps_list = [1, 2, 5, 10, 15, 25, 30, 60]
 
         self.camObj = None
-        # self.focus_rgb = int(np.round(0.1 * 255))
-        self.focus_rgb = 10
-
-        self.rgb_focus_type = 1 #0: Manual; 1: Autofocus
-        self.rgb_focus_type_options = [1, 0]
         self.study_name = ""
         self.participant_id = ""
+        self.segObj = seg_inference(ckpt_path="seg/ckpt/10000.pth")
+        self.VOC_COLORMAP = [0, 0, 0, 200, 128, 128, 0, 128, 0, 128,200,128, 128,128,200]
 
         # input_size = self.configer.get('test', 'data_transformer')['input_size']
         self.seg_img_width = 640 #input_size[0]
@@ -84,9 +86,6 @@ class RGBTCam(QWidget):
         self.ui.connectButton_Thermal.pressed.connect(self.scan_and_connect_thermal_camera)
         self.ui.comboBox_RGB_Cam.currentIndexChanged.connect(self.scan_and_connect_rgb_camera)
         self.ui.comboBox_vis.currentIndexChanged.connect(self.update_thermal_pseudocolor)
-        self.ui.comboBox_fps.currentIndexChanged.connect(self.update_frame_rate)
-        self.ui.comboBox_focus.currentIndexChanged.connect(self.update_rgb_focus_type)
-        self.ui.horizontalSlider_focus.valueChanged.connect(self.adjust_rgb_focus)
 
         self.ui.acquireButton.pressed.connect(self.control_acquisition)
         self.ui.recordButton.pressed.connect(self.control_recording)
@@ -96,7 +95,7 @@ class RGBTCam(QWidget):
         self.ui.recordButton.setEnabled(False)
 
         self.imgAcqLoop = threading.Thread(name='imgAcqLoop', target=thermal_capture_frame_thread, daemon=True, args=(
-            self.tcamObj, self.updatePixmap, self.updateLog))
+            self.tcamObj, self.process_inference, self.updatePixmap, self.updateLog))
         self.imgAcqLoop.start()
 
         ui_file.close()
@@ -111,7 +110,7 @@ class RGBTCam(QWidget):
             self.tcamObj.release_camera(acquisition_status)
 
     def btnstate(self, b):
-        global capture_thermal, capture_rgb
+        global capture_thermal, capture_rgb, run_inference
 
         if b.text() == "Capture Thermal":
             if b.isChecked() == True:
@@ -133,17 +132,20 @@ class RGBTCam(QWidget):
                 self.updateLog(b.text()+" is deselected")
                 self.ui.comboBox_RGB_Cam.setEnabled(False)
 
+        if b.text() == "Run Inference for Segmentation":
+            if b.isChecked() == True:
+                run_inference = True
+                self.updateLog(b.text()+" is selected")
+            else:
+                run_inference = False
+                self.updateLog(b.text()+" is deselected")
+
         self.enable_acquisition()
-
-
-    def update_frame_rate(self, indx):
-        global fps
-        fps = self.fps_list[indx]
 
 
     def scan_and_connect_rgb_camera(self, indx):
 
-        global acquisition_thread_rgb_live, rgb_camera_connect_status, fps
+        global acquisition_thread_rgb_live, rgb_camera_connect_status
 
         if acquisition_thread_rgb_live:
             acquisition_thread_rgb_live = False
@@ -156,16 +158,10 @@ class RGBTCam(QWidget):
             rgb_camera_connect_status = False
 
         if rgb_camera_connect_status:
-            # self.camObj.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-            # self.camObj.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-            # self.camObj.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-            # self.camObj.set(cv2.CAP_PROP_FPS, fps)
-            # self.camObj.set(28, self.focus_rgb)     # min: 0, max: 255, increment:5
-
             if not acquisition_thread_rgb_live:
                 acquisition_thread_rgb_live = True
                 self.imgAcqLoop_rgb = threading.Thread(name='imgAcqLoop_rgb', target=rgb_capture_frame_thread, daemon=True, args=(
-                    self.camObj, self.updateRGBPixmap, self.updateLog))
+                    self.camObj, self.process_inference, self.updateRGBPixmap, self.updateLog))
                 self.imgAcqLoop_rgb.start()
 
         self.enable_acquisition()
@@ -174,20 +170,6 @@ class RGBTCam(QWidget):
     def update_thermal_pseudocolor(self, indx):
         global pseudocolor
         pseudocolor = self.pseudocolor_list[indx].lower()
-
-    
-    def adjust_rgb_focus(self):
-        global rgb_camera_connect_status
-        self.focus_rgb = self.ui.horizontalSlider_focus.value()
-        if rgb_camera_connect_status:
-            self.camObj.set(28, self.focus_rgb)
-
-    
-    def update_rgb_focus_type(self, indx):
-        global rgb_camera_connect_status
-        self.rgb_focus_type = self.rgb_focus_type_options[indx]
-        if rgb_camera_connect_status:
-            self.camObj.set(cv2.CAP_PROP_AUTOFOCUS, self.rgb_focus_type)
 
 
     def update_study_name(self, text):
@@ -297,6 +279,43 @@ class RGBTCam(QWidget):
             self.ui.pix_label_rgb.setPixmap(QPixmap.fromImage(qimg2))
 
 
+    def process_inference(self, data_list):
+        global rgb_inf_img, thermal_inf_img
+        img_matrix, capture_status, img_type = data_list
+
+        if capture_status:
+            if img_type == "rgb":
+                rgb_inf_img = img_matrix
+            elif img_type == "thermal":
+                return
+                # thermal_inf_img = img_matrix
+
+            # if rgb_inf_img != None and thermal_inf_img != None:
+            #     pred_seg = self.segObj.run_inference(rgb_inf_img, thermal_inf_img)
+            #     rgb_inf_img = None
+            #     thermal_inf_img = None
+
+            if rgb_inf_img != None:
+                pred_seg = self.segObj.run_inference(rgb_inf_img)
+
+                pred_seg = Image.fromarray(pred_seg.astype('uint8'))
+                pred_seg.putpalette(self.VOC_COLORMAP)
+                mask = pred_seg.convert('RGBA')
+                mask.putalpha(128)
+                original_img = Image.fromarray(rgb_inf_img.astype('uint8')).convert('RGBA')
+                original_img = original_img.resize(mask.size)
+                result_image = Image.alpha_composite(original_img, mask)
+
+                rgbImage = cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)
+                h, w, ch = rgbImage.shape
+                bytesPerLine = ch * w
+                qimg2 = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                qimg2 = qimg2.scaled(640, 480, Qt.KeepAspectRatio)
+                self.ui.pix_label_rgb.setPixmap(QPixmap.fromImage(qimg2))
+
+                rgb_inf_img = None
+
+
     def updateLog(self, message):
         self.ui.log_label.setText(message)
 
@@ -304,9 +323,12 @@ class RGBTCam(QWidget):
 # Setup a signal slot mechanism, to send data to GUI in a thread-safe way.
 class Communicate(QObject):
     data_signal = Signal(list)
+    inf_data_signal = Signal(list)
     data_signal_rgb = Signal(list)
+
     save_signal = Signal(np.ndarray)
     save_signal_rgb = Signal(np.ndarray)
+
     status_signal = Signal(str)
 
 def save_frame_thermal(thermal_matrix):
@@ -328,15 +350,20 @@ def save_frame_rgb(rgb_matrix):
     cv2.imwrite(os.path.join(subdir_path, f'{num_frames_rgb:05d}' + '_' + utc_sec + '.png'), rgb_matrix)
 
 
-def rgb_capture_frame_thread(camObj, updateRGBPixmap, updateLog):
+def rgb_capture_frame_thread(camObj, process_inference, updateRGBPixmap, updateLog):
+
+    global acquisition_status, rgb_camera_connect_status, acquisition_thread_rgb_live, run_inference
+    global recording_status, use_lock_rgb_capture_with_thermal, enable_rgb_capture_with_lock
+
     # Setup the signal-slot mechanism.
     mySrc = Communicate()
-    mySrc.data_signal_rgb.connect(updateRGBPixmap)
     mySrc.status_signal.connect(updateLog)
     mySrc.save_signal_rgb.connect(save_frame_rgb)
 
-    global acquisition_status, rgb_camera_connect_status, acquisition_thread_rgb_live
-    global recording_status, use_lock_rgb_capture_with_thermal, enable_rgb_capture_with_lock
+    if run_inference:
+        mySrc.data_signal_rgb.connect(process_inference)
+    else:
+        mySrc.data_signal_rgb.connect(updateRGBPixmap)
 
     while True:
         if acquisition_thread_rgb_live:
@@ -352,7 +379,10 @@ def rgb_capture_frame_thread(camObj, updateRGBPixmap, updateLog):
                         if use_lock_rgb_capture_with_thermal:
                             enable_rgb_capture_with_lock = False
                         rgb_matrix_vis = deepcopy(rgb_matrix)
-                        mySrc.data_signal_rgb.emit([rgb_matrix_vis, rgb_ret])
+                        if run_inference:
+                            mySrc.data_signal_rgb.emit([rgb_matrix_vis, rgb_ret, "rgb"])
+                        else:
+                            mySrc.data_signal_rgb.emit([rgb_matrix_vis, rgb_ret])
 
                         if recording_status:
                             mySrc.save_signal_rgb.emit(rgb_matrix)
@@ -371,16 +401,20 @@ def rgb_capture_frame_thread(camObj, updateRGBPixmap, updateLog):
             mySrc.status_signal.emit("Acquisition thread termination. Please restart the application...")
             break
 
-def thermal_capture_frame_thread(tcamObj, updatePixmap, updateLog):
+
+def thermal_capture_frame_thread(tcamObj, process_inference, updatePixmap, updateLog):
+
+    global acquisition_status, thermal_camera_connect_status, keep_acquisition_thread, run_inference
+    global recording_status, pseudocolor, use_lock_rgb_capture_with_thermal, enable_rgb_capture_with_lock
+
     # Setup the signal-slot mechanism.
     mySrc = Communicate()
-    mySrc.data_signal.connect(updatePixmap)
     mySrc.status_signal.connect(updateLog)
     mySrc.save_signal.connect(save_frame_thermal)
 
-    global acquisition_status, thermal_camera_connect_status, keep_acquisition_thread
-    global recording_status, pseudocolor, use_lock_rgb_capture_with_thermal, enable_rgb_capture_with_lock
-
+    mySrc.inf_data_signal.connect(process_inference)
+    mySrc.data_signal.connect(updatePixmap)
+ 
     while True:
         if keep_acquisition_thread:
             if thermal_camera_connect_status and acquisition_status:
@@ -398,6 +432,10 @@ def thermal_capture_frame_thread(tcamObj, updatePixmap, updateLog):
                     if recording_status:
                         mySrc.save_signal.emit(thermal_matrix)
                         info_str = "[Min Temp, Max Temp] = " + str([min_temp, max_temp])
+
+                    if run_inference:
+                        inf_therm_img = deepcopy(thermal_matrix)
+                        mySrc.inf_data_signal.emit([inf_therm_img, True, "thermal"])
 
                     fig = Figure(tight_layout=True)
                     canvas = FigureCanvas(fig)
