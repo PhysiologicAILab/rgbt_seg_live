@@ -1,9 +1,9 @@
 import torch
-from models.LSNet_materials import LSNet
 from torch.backends import cudnn
 import torchvision.transforms as transforms
+from models.LSNet_materials import LSNet
+# cudnn.benchmark = True
 
-cudnn.benchmark = True
 
 class seg_inference(object):
     def __init__(self, ckpt_path) -> None:
