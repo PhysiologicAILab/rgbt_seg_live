@@ -71,7 +71,7 @@ class RGBTCam(QWidget):
         self.camObj = None
         self.study_name = ""
         self.participant_id = ""
-        self.segObj = seg_inference(ckpt_path="seg/ckpt/10000.pth")
+        self.segObj = seg_inference(ckpt_path="seg/ckpt/model.pth")
         self.VOC_COLORMAP = [0, 0, 0, 200, 128, 128, 0, 128, 0, 128,200,128, 128,128,200]
 
         # input_size = self.configer.get('test', 'data_transformer')['input_size']
