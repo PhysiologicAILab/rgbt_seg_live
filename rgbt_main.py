@@ -153,7 +153,7 @@ class RGBTCam(QWidget):
             acquisition_thread_rgb_live = False
             time.sleep(1)
         try:
-            cam_index = int(indx)
+            cam_index = int(indx - 1)
             self.camObj = cv2.VideoCapture(cam_index)
             rgb_camera_connect_status = True
         except:
@@ -300,17 +300,24 @@ class RGBTCam(QWidget):
             if np.any(rgb_inf_img) == None:
                 pass
             else:
+                rgb_inf_img = Image.fromarray(rgb_inf_img.astype('uint8')).convert('RGB')
+                
                 pred_seg = self.segObj.run_inference(rgb_inf_img)
-
+                # print("pred_seg_shape", pred_seg.shape)
                 pred_seg = Image.fromarray(pred_seg.astype('uint8'))
                 pred_seg.putpalette(self.VOC_COLORMAP)
                 mask = pred_seg.convert('RGBA')
                 mask.putalpha(128)
-                original_img = Image.fromarray(rgb_inf_img.astype('uint8')).convert('RGBA')
-                original_img = original_img.resize(mask.size)
-                result_image = Image.alpha_composite(original_img, mask)
+                
+                # original_img = Image.fromarray(rgb_inf_img.astype('uint8')).convert('RGBA')
+                rgb_inf_img = rgb_inf_img.resize(mask.size)
+                rgb_inf_img_a = rgb_inf_img.convert('RGBA')
+                result_image = Image.alpha_composite(rgb_inf_img_a, mask)
 
-                rgbImage = cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)
+                result_image = result_image.convert('RGB', palette=self.VOC_COLORMAP)
+                # print("result_image_shape", result_image.shape)
+                rgbImage = np.asarray(result_image)
+                rgbImage = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2RGB)
                 h, w, ch = rgbImage.shape
                 bytesPerLine = ch * w
                 qimg2 = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
