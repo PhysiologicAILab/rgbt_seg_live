@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'rgbt_form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.4
+## Created by: Qt User Interface Compiler version 6.4.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
     QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSlider,
-    QTabWidget, QWidget)
+    QLineEdit, QPushButton, QSizePolicy, QTabWidget,
+    QWidget)
 
 class Ui_RGBT(object):
     def setupUi(self, RGBT):
@@ -26,7 +26,7 @@ class Ui_RGBT(object):
             RGBT.setObjectName(u"RGBT")
         RGBT.resize(1400, 888)
         RGBT.setMinimumSize(QSize(0, 0))
-        RGBT.setMaximumSize(QSize(1400, 1000))
+        RGBT.setMaximumSize(QSize(1400, 1200))
         self.gridLayout = QGridLayout(RGBT)
         self.gridLayout.setObjectName(u"gridLayout")
         self.label = QLabel(RGBT)
@@ -118,8 +118,6 @@ class Ui_RGBT(object):
         self.comboBox_RGB_Cam.addItem("")
         self.comboBox_RGB_Cam.addItem("")
         self.comboBox_RGB_Cam.addItem("")
-        self.comboBox_RGB_Cam.addItem("")
-        self.comboBox_RGB_Cam.addItem("")
         self.comboBox_RGB_Cam.setObjectName(u"comboBox_RGB_Cam")
         self.comboBox_RGB_Cam.setEnabled(False)
         sizePolicy2.setHeightForWidth(self.comboBox_RGB_Cam.sizePolicy().hasHeightForWidth())
@@ -146,45 +144,12 @@ class Ui_RGBT(object):
 
         self.gridLayout_3.addWidget(self.connectButton_Thermal, 0, 1, 1, 1)
 
-        self.label_6 = QLabel(self.tab)
-        self.label_6.setObjectName(u"label_6")
-
-        self.gridLayout_3.addWidget(self.label_6, 2, 6, 1, 1)
-
         self.checkBox_RGB = QCheckBox(self.tab)
         self.checkBox_RGB.setObjectName(u"checkBox_RGB")
         sizePolicy2.setHeightForWidth(self.checkBox_RGB.sizePolicy().hasHeightForWidth())
         self.checkBox_RGB.setSizePolicy(sizePolicy2)
 
         self.gridLayout_3.addWidget(self.checkBox_RGB, 1, 0, 1, 1)
-
-        self.comboBox_focus = QComboBox(self.tab)
-        self.comboBox_focus.addItem("")
-        self.comboBox_focus.addItem("")
-        self.comboBox_focus.setObjectName(u"comboBox_focus")
-        sizePolicy2.setHeightForWidth(self.comboBox_focus.sizePolicy().hasHeightForWidth())
-        self.comboBox_focus.setSizePolicy(sizePolicy2)
-        self.comboBox_focus.setStyleSheet(u"text-align:left")
-        self.comboBox_focus.setMaxVisibleItems(2)
-
-        self.gridLayout_3.addWidget(self.comboBox_focus, 2, 7, 1, 1)
-
-        self.comboBox_fps = QComboBox(self.tab)
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.addItem("")
-        self.comboBox_fps.setObjectName(u"comboBox_fps")
-        sizePolicy2.setHeightForWidth(self.comboBox_fps.sizePolicy().hasHeightForWidth())
-        self.comboBox_fps.setSizePolicy(sizePolicy2)
-        self.comboBox_fps.setStyleSheet(u"text-align:left")
-        self.comboBox_fps.setMaxVisibleItems(5)
-
-        self.gridLayout_3.addWidget(self.comboBox_fps, 1, 7, 1, 1)
 
         self.comboBox_vis = QComboBox(self.tab)
         self.comboBox_vis.addItem("")
@@ -209,36 +174,6 @@ class Ui_RGBT(object):
         self.label_7.setObjectName(u"label_7")
 
         self.gridLayout_3.addWidget(self.label_7, 0, 6, 1, 1)
-
-        self.label_8 = QLabel(self.tab)
-        self.label_8.setObjectName(u"label_8")
-
-        self.gridLayout_3.addWidget(self.label_8, 1, 6, 1, 1)
-
-        self.label_pid = QLabel(self.tab)
-        self.label_pid.setObjectName(u"label_pid")
-
-        self.gridLayout_3.addWidget(self.label_pid, 3, 0, 1, 1)
-
-        self.text_pid = QLineEdit(self.tab)
-        self.text_pid.setObjectName(u"text_pid")
-        sizePolicy2.setHeightForWidth(self.text_pid.sizePolicy().hasHeightForWidth())
-        self.text_pid.setSizePolicy(sizePolicy2)
-        self.text_pid.setStyleSheet(u"text-align:left")
-
-        self.gridLayout_3.addWidget(self.text_pid, 3, 1, 1, 1)
-
-        self.label_2 = QLabel(self.tab)
-        self.label_2.setObjectName(u"label_2")
-
-        self.gridLayout_3.addWidget(self.label_2, 2, 0, 1, 1)
-
-        self.text_study = QLineEdit(self.tab)
-        self.text_study.setObjectName(u"text_study")
-        sizePolicy2.setHeightForWidth(self.text_study.sizePolicy().hasHeightForWidth())
-        self.text_study.setSizePolicy(sizePolicy2)
-
-        self.gridLayout_3.addWidget(self.text_study, 2, 1, 1, 1)
 
         self.line = QFrame(self.tab)
         self.line.setObjectName(u"line")
@@ -267,23 +202,35 @@ class Ui_RGBT(object):
 
         self.gridLayout_3.addWidget(self.recordButton, 4, 6, 1, 2)
 
-        self.horizontalSlider_focus = QSlider(self.tab)
-        self.horizontalSlider_focus.setObjectName(u"horizontalSlider_focus")
-        sizePolicy2.setHeightForWidth(self.horizontalSlider_focus.sizePolicy().hasHeightForWidth())
-        self.horizontalSlider_focus.setSizePolicy(sizePolicy2)
-        self.horizontalSlider_focus.setMaximum(255)
-        self.horizontalSlider_focus.setSingleStep(5)
-        self.horizontalSlider_focus.setPageStep(20)
-        self.horizontalSlider_focus.setValue(10)
-        self.horizontalSlider_focus.setSliderPosition(10)
-        self.horizontalSlider_focus.setOrientation(Qt.Horizontal)
+        self.text_pid = QLineEdit(self.tab)
+        self.text_pid.setObjectName(u"text_pid")
+        sizePolicy2.setHeightForWidth(self.text_pid.sizePolicy().hasHeightForWidth())
+        self.text_pid.setSizePolicy(sizePolicy2)
+        self.text_pid.setStyleSheet(u"text-align:left")
 
-        self.gridLayout_3.addWidget(self.horizontalSlider_focus, 3, 7, 1, 1)
+        self.gridLayout_3.addWidget(self.text_pid, 3, 7, 1, 1)
 
-        self.label_4 = QLabel(self.tab)
-        self.label_4.setObjectName(u"label_4")
+        self.label_pid = QLabel(self.tab)
+        self.label_pid.setObjectName(u"label_pid")
 
-        self.gridLayout_3.addWidget(self.label_4, 3, 6, 1, 1)
+        self.gridLayout_3.addWidget(self.label_pid, 3, 6, 1, 1)
+
+        self.label_2 = QLabel(self.tab)
+        self.label_2.setObjectName(u"label_2")
+
+        self.gridLayout_3.addWidget(self.label_2, 1, 6, 1, 1)
+
+        self.text_study = QLineEdit(self.tab)
+        self.text_study.setObjectName(u"text_study")
+        sizePolicy2.setHeightForWidth(self.text_study.sizePolicy().hasHeightForWidth())
+        self.text_study.setSizePolicy(sizePolicy2)
+
+        self.gridLayout_3.addWidget(self.text_study, 1, 7, 1, 1)
+
+        self.checkBox_seg = QCheckBox(self.tab)
+        self.checkBox_seg.setObjectName(u"checkBox_seg")
+
+        self.gridLayout_3.addWidget(self.checkBox_seg, 3, 0, 1, 1)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -321,8 +268,6 @@ class Ui_RGBT(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.comboBox_RGB_Cam.setCurrentIndex(0)
-        self.comboBox_focus.setCurrentIndex(0)
-        self.comboBox_fps.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(RGBT)
@@ -332,39 +277,21 @@ class Ui_RGBT(object):
         RGBT.setWindowTitle(QCoreApplication.translate("RGBT", u"TIComp", None))
         self.label.setText("")
         self.log_label.setText(QCoreApplication.translate("RGBT", u"Info Log", None))
-        self.groupBox_3.setTitle(QCoreApplication.translate("RGBT", u"RGB Image Streaming", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("RGBT", u"RGB", None))
         self.pix_label_rgb.setText(QCoreApplication.translate("RGBT", u"RGB Image streaming will appear here", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("RGBT", u"Thermal Image Streaming", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("RGBT", u"Thermal", None))
         self.pix_label.setText(QCoreApplication.translate("RGBT", u"Thermal Image streaming will appear here", None))
         self.groupBox.setTitle(QCoreApplication.translate("RGBT", u"Controls", None))
-        self.comboBox_RGB_Cam.setItemText(0, QCoreApplication.translate("RGBT", u"0", None))
-        self.comboBox_RGB_Cam.setItemText(1, QCoreApplication.translate("RGBT", u"1", None))
-        self.comboBox_RGB_Cam.setItemText(2, QCoreApplication.translate("RGBT", u"2", None))
-        self.comboBox_RGB_Cam.setItemText(3, QCoreApplication.translate("RGBT", u"3", None))
-        self.comboBox_RGB_Cam.setItemText(4, QCoreApplication.translate("RGBT", u"4", None))
+        self.comboBox_RGB_Cam.setItemText(0, QCoreApplication.translate("RGBT", u"Select Camera", None))
+        self.comboBox_RGB_Cam.setItemText(1, QCoreApplication.translate("RGBT", u"0", None))
+        self.comboBox_RGB_Cam.setItemText(2, QCoreApplication.translate("RGBT", u"1", None))
 
 #if QT_CONFIG(tooltip)
         self.comboBox_RGB_Cam.setToolTip(QCoreApplication.translate("RGBT", u"<html><head/><body><p>Select RGB Camera</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.checkBox_Th.setText(QCoreApplication.translate("RGBT", u"Capture Thermal", None))
         self.connectButton_Thermal.setText(QCoreApplication.translate("RGBT", u"Scan and Connect", None))
-        self.label_6.setText(QCoreApplication.translate("RGBT", u"Focus Type", None))
         self.checkBox_RGB.setText(QCoreApplication.translate("RGBT", u"Capture RGB", None))
-        self.comboBox_focus.setItemText(0, QCoreApplication.translate("RGBT", u"Auto", None))
-        self.comboBox_focus.setItemText(1, QCoreApplication.translate("RGBT", u"Manual", None))
-
-#if QT_CONFIG(tooltip)
-        self.comboBox_focus.setToolTip(QCoreApplication.translate("RGBT", u"<html><head/><body><p>Focus Type</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.comboBox_fps.setItemText(0, QCoreApplication.translate("RGBT", u"1", None))
-        self.comboBox_fps.setItemText(1, QCoreApplication.translate("RGBT", u"2", None))
-        self.comboBox_fps.setItemText(2, QCoreApplication.translate("RGBT", u"5", None))
-        self.comboBox_fps.setItemText(3, QCoreApplication.translate("RGBT", u"10", None))
-        self.comboBox_fps.setItemText(4, QCoreApplication.translate("RGBT", u"15", None))
-        self.comboBox_fps.setItemText(5, QCoreApplication.translate("RGBT", u"25", None))
-        self.comboBox_fps.setItemText(6, QCoreApplication.translate("RGBT", u"30", None))
-        self.comboBox_fps.setItemText(7, QCoreApplication.translate("RGBT", u"60", None))
-
         self.comboBox_vis.setItemText(0, QCoreApplication.translate("RGBT", u"CoolWarm", None))
         self.comboBox_vis.setItemText(1, QCoreApplication.translate("RGBT", u"GNUPlot2", None))
         self.comboBox_vis.setItemText(2, QCoreApplication.translate("RGBT", u"Gray", None))
@@ -378,15 +305,11 @@ class Ui_RGBT(object):
         self.comboBox_vis.setItemText(10, QCoreApplication.translate("RGBT", u"Terrain", None))
 
         self.label_7.setText(QCoreApplication.translate("RGBT", u"Pseudo-color Palette for Visualization", None))
-        self.label_8.setText(QCoreApplication.translate("RGBT", u"Frame Rate", None))
-        self.label_pid.setText(QCoreApplication.translate("RGBT", u"Participant ID", None))
-        self.label_2.setText(QCoreApplication.translate("RGBT", u"Study Name", None))
         self.acquireButton.setText(QCoreApplication.translate("RGBT", u"Start Live Streaming", None))
         self.recordButton.setText(QCoreApplication.translate("RGBT", u"Start Recording", None))
-#if QT_CONFIG(tooltip)
-        self.horizontalSlider_focus.setToolTip(QCoreApplication.translate("RGBT", u"<html><head/><body><p>0 to 255, in increment of 5; </p><p>0 indicates focus at infinity. 255 indicates nearest focus.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_4.setText(QCoreApplication.translate("RGBT", u"Focus Adjustment", None))
+        self.label_pid.setText(QCoreApplication.translate("RGBT", u"Participant ID", None))
+        self.label_2.setText(QCoreApplication.translate("RGBT", u"Study Name", None))
+        self.checkBox_seg.setText(QCoreApplication.translate("RGBT", u"Run Inference", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("RGBT", u"Live Acquisition", None))
         self.pushButton_2.setText(QCoreApplication.translate("RGBT", u"Start Playing", None))
         self.browseButton.setText(QCoreApplication.translate("RGBT", u"Browse", None))

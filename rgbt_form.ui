@@ -260,27 +260,17 @@
             </property>
             <item>
              <property name="text">
+              <string>Select Camera</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>0</string>
              </property>
             </item>
             <item>
              <property name="text">
               <string>1</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>2</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>3</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>4</string>
              </property>
             </item>
            </widget>
@@ -505,7 +495,7 @@
           <item row="3" column="0">
            <widget class="QCheckBox" name="checkBox_seg">
             <property name="text">
-             <string>Run Inference for Segmentation</string>
+             <string>Run Inference</string>
             </property>
            </widget>
           </item>

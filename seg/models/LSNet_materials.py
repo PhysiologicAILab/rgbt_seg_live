@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.functional as F
 # from models.mobilenetv2 import mobilenet_v2
 # from models.resnet import Backbone_ResNet50_in3
-from models.Res2Net_v1b import res2net50_v1b_26w_4s
+from seg.models.Res2Net_v1b import res2net50_v1b_26w_4s
 
 criterion_MAE = nn.L1Loss().cuda()
 
@@ -307,7 +307,7 @@ class LSNet(nn.Module):
             self.layer5_rgb,
         ) = Backbone_ResNet50_in3(pretrained=True)
         '''
-        self.resnet = res2net50_v1b_26w_4s(pretrained=True)
+        self.resnet = res2net50_v1b_26w_4s(pretrained=False)
         #self.depth_pretrained = mobilenet_v2()
 
         # Upsample_model

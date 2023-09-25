@@ -11,8 +11,9 @@ from copy import deepcopy
 import argparse
 
 import cv2
-from utils.flircamera import CameraManager as tcam
 from seg.inference import seg_inference
+from utils.flircamera import CameraManager as tcam
+
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtCore import QFile, QObject, Signal, Qt
 from PySide6.QtUiTools import QUiLoader
@@ -32,7 +33,7 @@ global rgb_inf_img, thermal_inf_img
 
 capture_rgb = False
 capture_thermal = False
-run_inference = False
+run_inference = True
 acquisition_status = False
 recording_status = False
 thermal_camera_connect_status = False
@@ -132,13 +133,14 @@ class RGBTCam(QWidget):
                 self.updateLog(b.text()+" is deselected")
                 self.ui.comboBox_RGB_Cam.setEnabled(False)
 
-        if b.text() == "Run Inference for Segmentation":
+        if b.text() == "Run Inference":
             if b.isChecked() == True:
                 run_inference = True
                 self.updateLog(b.text()+" is selected")
             else:
                 run_inference = False
                 self.updateLog(b.text()+" is deselected")
+            print("Run Inference", run_inference)
 
         self.enable_acquisition()
 
@@ -287,7 +289,7 @@ class RGBTCam(QWidget):
             if img_type == "rgb":
                 rgb_inf_img = img_matrix
             elif img_type == "thermal":
-                return
+                pass
                 # thermal_inf_img = img_matrix
 
             # if rgb_inf_img != None and thermal_inf_img != None:
@@ -295,7 +297,9 @@ class RGBTCam(QWidget):
             #     rgb_inf_img = None
             #     thermal_inf_img = None
 
-            if rgb_inf_img != None:
+            if np.any(rgb_inf_img) == None:
+                pass
+            else:
                 pred_seg = self.segObj.run_inference(rgb_inf_img)
 
                 pred_seg = Image.fromarray(pred_seg.astype('uint8'))
