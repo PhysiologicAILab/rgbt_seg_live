@@ -19,6 +19,7 @@ from PySide6.QtCore import QFile, QObject, Signal, Qt
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QPixmap, QImage
 from pathlib import Path
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import cv2
@@ -76,8 +77,8 @@ class RGBTCam(QWidget):
         self.VOC_COLORMAP = [0, 0, 0, 200, 128, 128, 0, 128, 0, 128,200,128, 128,128,200]
 
         # input_size = self.configer.get('test', 'data_transformer')['input_size']
-        self.seg_img_width = 640 #input_size[0]
-        self.seg_img_height = 512 #input_size[1]
+        self.seg_img_width = 480 #input_size[0]
+        self.seg_img_height = 480 #input_size[1]
 
         self.ui.checkBox_Th.stateChanged.connect(lambda:self.btnstate(self.ui.checkBox_Th))
         self.ui.checkBox_RGB.stateChanged.connect(lambda:self.btnstate(self.ui.checkBox_RGB))
@@ -277,7 +278,7 @@ class RGBTCam(QWidget):
             h, w, ch = rgbImage.shape
             bytesPerLine = ch * w
             qimg2 = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
-            qimg2 = qimg2.scaled(640, 480, Qt.KeepAspectRatio)
+            qimg2 = qimg2.scaled(self.seg_img_width, self.seg_img_height, Qt.KeepAspectRatio)
             self.ui.pix_label_rgb.setPixmap(QPixmap.fromImage(qimg2))
 
 
@@ -302,26 +303,25 @@ class RGBTCam(QWidget):
             else:
                 rgb_inf_img = Image.fromarray(rgb_inf_img.astype('uint8')).convert('RGB')
                 
-                pred_seg = self.segObj.run_inference(rgb_inf_img)
+                rgb_inf_img, pred_seg = self.segObj.run_inference(rgb_inf_img)
+                # _, pred_seg = self.segObj.run_inference(rgb_inf_img)
                 # print("pred_seg_shape", pred_seg.shape)
                 pred_seg = Image.fromarray(pred_seg.astype('uint8'))
                 pred_seg.putpalette(self.VOC_COLORMAP)
                 mask = pred_seg.convert('RGBA')
                 mask.putalpha(128)
                 
-                # original_img = Image.fromarray(rgb_inf_img.astype('uint8')).convert('RGBA')
-                rgb_inf_img = rgb_inf_img.resize(mask.size)
-                rgb_inf_img_a = rgb_inf_img.convert('RGBA')
-                result_image = Image.alpha_composite(rgb_inf_img_a, mask)
+                rgb_inf_img = rgb_inf_img.convert('RGBA')
+                rgb_inf_img = Image.alpha_composite(rgb_inf_img, mask)
 
-                result_image = result_image.convert('RGB', palette=self.VOC_COLORMAP)
-                # print("result_image_shape", result_image.shape)
-                rgbImage = np.asarray(result_image)
-                rgbImage = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2RGB)
+                rgb_inf_img = rgb_inf_img.convert('RGB', palette=self.VOC_COLORMAP)
+                # print("rgb_inf_img_shape", rgb_inf_img.shape)
+                rgbImage = np.asarray(rgb_inf_img)
+                # rgbImage = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2RGB)
                 h, w, ch = rgbImage.shape
                 bytesPerLine = ch * w
                 qimg2 = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
-                qimg2 = qimg2.scaled(640, 480, Qt.KeepAspectRatio)
+                qimg2 = qimg2.scaled(self.seg_img_height, self.seg_img_width, Qt.KeepAspectRatio)
                 self.ui.pix_label_rgb.setPixmap(QPixmap.fromImage(qimg2))
 
                 rgb_inf_img = None
@@ -370,6 +370,8 @@ def rgb_capture_frame_thread(camObj, process_inference, updateRGBPixmap, updateL
     mySrc = Communicate()
     mySrc.status_signal.connect(updateLog)
     mySrc.save_signal_rgb.connect(save_frame_rgb)
+    # tmp_data_path = r"D:/Guangyu/D1_FINAL/Images"
+    # img_list = os.listdir(tmp_data_path)
 
     if run_inference:
         mySrc.data_signal_rgb.connect(process_inference)
@@ -377,13 +379,19 @@ def rgb_capture_frame_thread(camObj, process_inference, updateRGBPixmap, updateL
         mySrc.data_signal_rgb.connect(updateRGBPixmap)
 
     while True:
+    # for im_file in img_list:
         if acquisition_thread_rgb_live:
             if rgb_camera_connect_status and acquisition_status:
                 if not use_lock_rgb_capture_with_thermal or (use_lock_rgb_capture_with_thermal and enable_rgb_capture_with_lock):
                     t1 = time.time()
                     info_str = ""
                     rgb_ret, rgb_matrix = camObj.read()
-
+                    rgb_matrix = cv2.cvtColor(rgb_matrix, cv2.COLOR_BGR2RGB)
+                    time.sleep(0.5)
+                    # rgb_ret = True
+                    # rgb_matrix = cv2.imread(os.path.join(tmp_data_path, im_file))
+                    # rgb_matrix = cv2.cvtColor(rgb_matrix, cv2.COLOR_BGR2RGB)
+                    # time.sleep(1)
                     # rgb_matrix = cv2.rotate(rgb_matrix, cv2.ROTATE_180)
 
                     if rgb_ret:
